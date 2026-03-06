@@ -1,0 +1,1038 @@
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Quiz — Ma'lumotlar Tuzilmasi va Algoritmlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1c1c28;
+    --accent: #00e5ff;
+    --accent2: #ff3d71;
+    --accent3: #a855f7;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --correct: #00e676;
+    --wrong: #ff3d71;
+    --border: rgba(255,255,255,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(0,229,255,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(168,85,247,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 780px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== SCREEN COMMON ===== */
+  .screen {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== HEADER BADGE ===== */
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  /* ===== INTRO SCREEN ===== */
+  #intro-screen {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .intro-title {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .intro-sub {
+    font-size: 16px;
+    color: var(--muted);
+    margin-bottom: 48px;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 400px;
+    margin: 0 auto 32px;
+  }
+
+  .input-group label {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-align: left;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .input-group input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: 'Syne', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .input-group input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.1);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn:hover {
+    background: #33eaff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,229,255,0.25);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .btn.secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .btn.secondary:hover {
+    background: rgba(0,229,255,0.08);
+    box-shadow: 0 8px 24px rgba(0,229,255,0.1);
+  }
+
+  /* ===== QUIZ SCREEN ===== */
+  .quiz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .quiz-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .quiz-meta span {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    margin-bottom: 36px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .q-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent3);
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+  }
+
+  .q-text {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 28px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: rgba(0,229,255,0.3);
+    background: rgba(0,229,255,0.05);
+  }
+
+  .option.selected {
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.08);
+  }
+
+  .option.correct {
+    border-color: var(--correct);
+    background: rgba(0,230,118,0.1);
+  }
+
+  .option.wrong {
+    border-color: var(--wrong);
+    background: rgba(255,61,113,0.1);
+  }
+
+  .option.disabled { cursor: default; }
+
+  .opt-key {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    min-width: 22px;
+    padding-top: 1px;
+  }
+
+  .option.selected .opt-key { color: var(--accent); }
+  .option.correct .opt-key  { color: var(--correct); }
+  .option.wrong .opt-key    { color: var(--wrong); }
+
+  .opt-text { font-size: 15px; line-height: 1.5; }
+
+  .feedback-box {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+    display: none;
+  }
+
+  .feedback-box.show { display: block; }
+  .feedback-box.correct-fb { background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.25); color: var(--correct); }
+  .feedback-box.wrong-fb   { background: rgba(255,61,113,0.08); border: 1px solid rgba(255,61,113,0.25); color: var(--wrong); }
+
+  .feedback-box .explanation {
+    color: var(--text);
+    margin-top: 6px;
+    opacity: 0.8;
+  }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* ===== RESULT SCREEN ===== */
+  #result-screen { text-align: center; }
+
+  .result-hero {
+    padding: 48px 20px 32px;
+  }
+
+  .result-name {
+    font-size: 14px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .result-score-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,229,255,0.15);
+  }
+
+  .result-score-num {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .result-score-total {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .result-label {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .result-pct {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--accent3);
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 28px 0;
+    flex-wrap: wrap;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 28px;
+    min-width: 120px;
+  }
+
+  .stat-num {
+    font-size: 32px;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .stat-num.g { color: var(--correct); }
+  .stat-num.r { color: var(--wrong); }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* ===== REPORT ===== */
+  .report-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 32px 0 16px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .report-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .report-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    text-align: left;
+    transition: border-color 0.2s;
+  }
+
+  .report-item.r-correct { border-left: 3px solid var(--correct); }
+  .report-item.r-wrong   { border-left: 3px solid var(--wrong); }
+
+  .r-q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .r-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .r-q-text { font-size: 15px; font-weight: 600; line-height: 1.5; }
+
+  .r-answers {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 30px;
+    font-size: 14px;
+  }
+
+  .r-answer { display: flex; gap: 8px; }
+  .r-answer-label { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 12px; min-width: 80px; flex-shrink: 0; }
+  .r-answer-val.c { color: var(--correct); }
+  .r-answer-val.w { color: var(--wrong); }
+
+  .r-explanation {
+    margin-left: 30px;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 32px 0 48px;
+    flex-wrap: wrap;
+  }
+
+  /* Timer */
+  .timer-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="screen active" id="intro-screen">
+    <div class="badge">/ DSA Quiz System /</div>
+    <h1 class="intro-title">Ma'lumotlar Tuzilmasi<br>va Algoritmlar</h1>
+    <p class="intro-sub">20 ta savol · Tasodifiy tartib · Batafsil hisobot</p>
+    <div class="input-group">
+      <div>
+        <label>Ism</label>
+        <input type="text" id="inp-first" placeholder="Isminginzni kiriting" autocomplete="off">
+      </div>
+      <div>
+        <label>Familiya</label>
+        <input type="text" id="inp-last" placeholder="Familiyangizni kiriting" autocomplete="off">
+      </div>
+    </div>
+    <button class="btn" onclick="startQuiz()">Testni boshlash →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="quiz-screen">
+    <div class="quiz-header">
+      <div class="quiz-meta">Savol <span id="q-current">1</span> / <span id="q-total">20</span></div>
+      <div class="quiz-meta">Talaba: <span id="q-name">—</span></div>
+      <div class="timer-badge" id="timer">00:00</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="question-card">
+      <div class="q-number" id="q-num-label">SAVOL 01</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="options-container"></div>
+      <div class="feedback-box" id="feedback-box"></div>
+    </div>
+ <div class="quiz-nav" style="margin-top:-25px;"></div>
+      <button class="btn" id="next-btn" onclick="nextQuestion()" style="display:none; margin-top:-20px; float:right;">Keyingi →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="result-screen">
+    <div class="result-hero">
+      <div class="badge">/ Test Yakunlandi /</div>
+      <div class="result-name" id="res-name"></div>
+      <div class="result-score-circle">
+        <div class="result-score-num" id="res-score">0</div>
+        <div class="result-score-total" id="res-total">/20</div>
+      </div>
+      <div class="result-label" id="res-label"></div>
+      <div class="result-pct" id="res-pct"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-num g" id="st-correct">0</div>
+        <div class="stat-label">TO'G'RI</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num r" id="st-wrong">0</div>
+        <div class="stat-label">NOTO'G'RI</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="st-time" style="color:var(--accent3)">0:00</div>
+        <div class="stat-label">VAQT</div>
+      </div>
+    </div>
+
+    <div class="report-title">Batafsil Hisobot</div>
+    <div id="report-container"></div>
+
+    <div class="result-actions">
+      <button class="btn secondary" onclick="retryQuiz()">← Qayta urinish</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ======================== QUESTION BANK ========================
+const QUESTION_BANK = [
+  {
+    id: 1,
+    text: "Quyidagi qaysi variant faqat <code>integer</code> (butun son) turidagi qiymatlarni to'g'ri ifodalaydi?",
+    options: [
+      { text: "42, -7, 0, 1000000", correct: true },
+      { text: "3.14, -2.7, 0.0, 1.0", correct: false },
+      { text: "3.14f, -2.7f, 0.0f", correct: false },
+      { text: "'a', 'z', '0', '!'", correct: false }
+    ],
+    explanation: "Integer (int) — butun sonlar turi bo'lib, kasr qismi bo'lmaydi. Masalan: 42, -7, 0, 1000000. float va double — kasr sonlar, char — belgili tur."
+  },
+  {
+    id: 2,
+    text: "Quyidagi qaysi variant faqat <code>double</code> turidagi qiymatlarni to'g'ri ifodalaydi?",
+    options: [
+      { text: "3.14159265358979, -0.000001, 2.0", correct: true },
+      { text: "3.14f, -2.7f, 1.0f", correct: false },
+      { text: "42, -7, 0, 1000", correct: false },
+      { text: "'A', 'B', 'C'", correct: false }
+    ],
+    explanation: "double — 64-bitli kasr son turi (IEEE 754). Kasr qismli katta aniqlikdagi sonlar: 3.14159265358979 kabi. float esa 32-bitli bo'lib, oxirida 'f' harfi yoziladi."
+  },
+  {
+    id: 3,
+    text: "Quyidagi qaysi variant faqat <code>float</code> turidagi sonlarni to'g'ri ko'rsatadi?",
+    options: [
+      { text: "3.14f, -2.7f, 0.0f, 1.5f", correct: true },
+      { text: "3.14159265358979, -0.000001, 2.0", correct: false },
+      { text: "42, -7, 0, 100", correct: false },
+      { text: "3.14, -2.7, 0.0 (f harfisiz)", correct: false }
+    ],
+    explanation: "float — 32-bitli kasr son. Java, C, C++ kabi tillarda float konstantalari oxiriga 'f' harfi qo'yiladi: 3.14f. 'f' harfisiz yozilsa, bu double hisoblanadi."
+  },
+  {
+    id: 4,
+    text: "Quyidagi qaysi variant faqat <code>char</code> tipidagi o'zgaruvchilarni to'g'ri ifodalaydi?",
+    options: [
+      { text: `'a', 'Z', '5', '@', '\\n'`, correct: true },
+      { text: `"salom", "a", "Z", "5"`, correct: false },
+      { text: `"a", "Z", "5", "@"`, correct: false },
+      { text: `'salom', 'hello', 'uz'`, correct: false }
+    ],
+    explanation: "char — bitta belgini saqlaydi va yozilishida BITTA QAVS ( ' ' ) ishlatiladi. String esa bir nechta belgidan iborat bo'lib, IKKI QAVS ( \" \" ) ishlatiladi. 'salom' kabi bir nechta belgi char bo'la olmaydi!"
+  },
+  {
+    id: 5,
+    text: "<code>ROM</code> qanday xotira turi va uning to'liq inglizcha nomi nima?",
+    options: [
+      { text: "Doimiy (o'qish uchun) xotira — Read-Only Memory", correct: true },
+      { text: "Tezkor operativ xotira — Random Access Memory", correct: false },
+      { text: "Qattiq disk xotirasi — Hard Disk Drive", correct: false },
+      { text: "Qattiq holat xotirasi — Solid State Drive", correct: false }
+    ],
+    explanation: "ROM — Read-Only Memory (faqat o'qish uchun xotira). Bu xotiraga ma'lumot zavodda yoziladi va o'chirilmaydi (kompyuterni yoqish uchun BIOS kabi). Elektrni o'chirsa ham ma'lumot saqlanadi."
+  },
+  {
+    id: 6,
+    text: "<code>RAM</code> qanday xotira vazifasini bajaradi va to'liq inglizcha nomi nima?",
+    options: [
+      { text: "Vaqtinchalik operativ xotira — Random Access Memory", correct: true },
+      { text: "Doimiy o'qish xotirasi — Read-Only Memory", correct: false },
+      { text: "Saqlash qurilmasi — Hard Disk Drive", correct: false },
+      { text: "Tezkor disk xotirasi — Solid State Drive", correct: false }
+    ],
+    explanation: "RAM — Random Access Memory (operativ xotira). Kompyuter ishlab turganida dastur va ma'lumotlarni vaqtincha saqlaydi. Kompyuterni o'chirganda RAM dagi ma'lumotlar yo'qoladi."
+  },
+  {
+    id: 7,
+    text: "<code>HDD</code> qanday xotira turi va to'liq inglizcha nomi nima?",
+    options: [
+      { text: "Magnit diskli doimiy saqlash xotirasi — Hard Disk Drive", correct: true },
+      { text: "Tezkor saqlash qurilmasi — Solid State Drive", correct: false },
+      { text: "Faqat o'qish xotirasi — Read-Only Memory", correct: false },
+      { text: "Operativ xotira — Random Access Memory", correct: false }
+    ],
+    explanation: "HDD — Hard Disk Drive (qattiq disk). Magnit lentali aylanuvchi diskdan foydalanib ma'lumot saqlaydi. SSD ga nisbatan sekinroq, lekin arzonroq va hajmi katta bo'ladi."
+  },
+  {
+    id: 8,
+    text: "<code>SSD</code> qanday xotira turi va to'liq inglizcha nomi nima?",
+    options: [
+      { text: "Flash xotirali tezkor saqlash qurilmasi — Solid State Drive", correct: true },
+      { text: "Magnit diskli xotira — Hard Disk Drive", correct: false },
+      { text: "Doimiy o'qish xotirasi — Read-Only Memory", correct: false },
+      { text: "Operativ xotira — Random Access Memory", correct: false }
+    ],
+    explanation: "SSD — Solid State Drive. Flash (chip) xotirasidan foydalanadi, harakatlanuvchi qismi yo'q. HDD dan 5-10 barobar tez ishlaydi, zarba va tebranishga chidamli."
+  },
+  {
+    id: 9,
+    text: "Quyidagilardan qaysilari <b>primitiv</b> ma'lumotlar tuzilmasiga kiradi?",
+    options: [
+      { text: "Integer, Float, Character, Boolean", correct: true },
+      { text: "Array, Linked List, Stack, Queue", correct: false },
+      { text: "Tree, Graph, Hash Table", correct: false },
+      { text: "Array, Integer, Graph, Boolean", correct: false }
+    ],
+    explanation: "Primitiv ma'lumotlar tuzilmasi — tilning o'zi ta'minlaydigan asosiy turlar: Integer, Float/Double, Character, Boolean. Ular boshqa turlardan tashkil topgan emas."
+  },
+  {
+    id: 10,
+    text: "Quyidagilardan qaysilari <b>non-primitiv</b> (murakkab) ma'lumotlar tuzilmasiga kiradi?",
+    options: [
+      { text: "Array, Linked List, Stack, Queue, Tree, Graph", correct: true },
+      { text: "Integer, Float, Boolean, Char", correct: false },
+      { text: "Integer, Array, Boolean", correct: false },
+      { text: "Faqat Tree va Graph", correct: false }
+    ],
+    explanation: "Non-primitiv ma'lumotlar tuzilmasi primitiv turlar asosida qurilgan murakkab tuzilmalar: Array, Linked List, Stack, Queue, Tree, Graph, Hash Table va boshqalar."
+  },
+  {
+    id: 11,
+    text: "<b>Bitwise operatorlar</b> nima va qaysilar to'g'ri?",
+    options: [
+      { text: "Sonlarning ikkilik (bit) ko'rinishida ishlash uchun operatorlar: &, |, ^, ~, <<, >>", correct: true },
+      { text: "Mantiqiy solishtirish uchun: ==, !=, >, <, >=, <=", correct: false },
+      { text: "Arifmetik amallar: +, -, *, /, %", correct: false },
+      { text: "Qiymat berish uchun: =, +=, -=, *=", correct: false }
+    ],
+    explanation: "Bitwise operatorlar sonlarning ikkilik (binary) ko'rinishidagi alohida bitlariga amal bajaradi. Asosiy bitwise operatorlar: AND(&), OR(|), XOR(^), NOT(~), Left Shift(<<), Right Shift(>>)."
+  },
+  {
+    id: 12,
+    text: "<b>12 & 10</b> (bitwise AND) operatsiyasining natijasi qanday?",
+    options: [
+      { text: "8", correct: true },
+      { text: "14", correct: false },
+      { text: "22", correct: false },
+      { text: "2", correct: false }
+    ],
+    explanation: "12 = 1100₂, 10 = 1010₂. AND: faqat ikkala bit ham 1 bo'lsa natija 1.\n1100 & 1010 = 1000₂ = 8."
+  },
+  {
+    id: 13,
+    text: "<b>5 | 3</b> (bitwise OR) operatsiyasining natijasi qanday?",
+    options: [
+      { text: "7", correct: true },
+      { text: "1", correct: false },
+      { text: "15", correct: false },
+      { text: "6", correct: false }
+    ],
+    explanation: "5 = 101₂, 3 = 011₂. OR: kamida bitta bit 1 bo'lsa natija 1.\n101 | 011 = 111₂ = 7."
+  },
+  {
+    id: 14,
+    text: "<b>9 ^ 5</b> (bitwise XOR) operatsiyasining natijasi qanday?",
+    options: [
+      { text: "12", correct: true },
+      { text: "14", correct: false },
+      { text: "4", correct: false },
+      { text: "1", correct: false }
+    ],
+    explanation: "9 = 1001₂, 5 = 0101₂. XOR: faqat bitlar FARQLI bo'lsa natija 1.\n1001 ^ 0101 = 1100₂ = 12."
+  },
+  {
+    id: 15,
+    text: "<b>20 >> 2</b> (bitwise right shift) operatsiyasining natijasi qanday?",
+    options: [
+      { text: "5", correct: true },
+      { text: "80", correct: false },
+      { text: "10", correct: false },
+      { text: "40", correct: false }
+    ],
+    explanation: "20 = 10100₂. 2 bit o'ngga siljitilsa: 00101₂ = 5. Right shift >> n — sonni 2ⁿ ga bo'lishga ekvivalent. 20 / 4 = 5."
+  },
+  {
+    id: 16,
+    text: "<b>3 << 3</b> (bitwise left shift) operatsiyasining natijasi qanday?",
+    options: [
+      { text: "24", correct: true },
+      { text: "6", correct: false },
+      { text: "9", correct: false },
+      { text: "12", correct: false }
+    ],
+    explanation: "3 = 011₂. 3 bit chapga siljitilsa: 011000₂ = 24. Left shift << n — sonni 2ⁿ ga ko'paytirishga ekvivalent. 3 × 8 = 24."
+  },
+  {
+    id: 17,
+    text: "<b>~6</b> (bitwise NOT) operatsiyasining natijasi qanday? (Java / C, 32-bit int)",
+    options: [
+      { text: "-7", correct: true },
+      { text: "7", correct: false },
+      { text: "-6", correct: false },
+      { text: "249", correct: false }
+    ],
+    explanation: "Bitwise NOT (~) — barcha bitlarni teskari qiladi. ~n = -(n+1) formula bilan hisoblanadi. ~6 = -(6+1) = -7. Bu ikki-komplementli (two's complement) raqamlash tizimidan kelib chiqadi."
+  },
+  {
+    id: 18,
+    text: "<b>Tarmoqlanuvchi algoritm</b> dasturlashda qaysi operator yordamida amalga oshiriladi?",
+    options: [
+      { text: "if / else if / else (shartli operator)", correct: true },
+      { text: "while / for / do-while (takrorlash operatori)", correct: false },
+      { text: "print / output operatori", correct: false },
+      { text: "Faqat switch-case operatori", correct: false }
+    ],
+    explanation: "Tarmoqlanuvchi algoritm — shartga qarab turli yo'nalishda davom etadi. Dasturlashda bu if / else if / else yoki switch-case operatorlari orqali ifodalanadi. Masalan: if (shart) { A blok } else { B blok }."
+  },
+  {
+    id: 19,
+    text: "<b>Takrorlanuvchi algoritm</b> dasturlashda qaysi operator yordamida amalga oshiriladi?",
+    options: [
+      { text: "while / for / do-while (tsikl operatorlari)", correct: true },
+      { text: "if / else (shartli operator)", correct: false },
+      { text: "print / output operatori", correct: false },
+      { text: "import / include operatori", correct: false }
+    ],
+    explanation: "Takrorlanuvchi algoritm (tsikl/loop) — biror amal yoki blok bir necha marta bajariladi. Dasturlashda while, for, do-while kabi tsikl operatorlari ishlatiladi."
+  },
+  {
+    id: 20,
+    text: "Quyidagi misollardan qaysi biri <b>chiziqli algoritmga</b> misol bo'la oladi?",
+    options: [
+      { text: "Ikki sonni qo'shib natijani ekranga chiqarish: a=5; b=3; c=a+b; print(c)", correct: true },
+      { text: "Sonni juft yoki toq ekanligini tekshirib, turli xabar chiqarish", correct: false },
+      { text: "1 dan 100 gacha sonlarni yig'indisini hisoblash (tsikl)", correct: false },
+      { text: "Foydalanuvchi 'ha' deguncha savol berish", correct: false }
+    ],
+    explanation: "Chiziqli algoritm — har bir amal ketma-ket, shartlanmagan va takrorlanmagan holda bajariladi. Masalan: a=5; b=3; c=a+b; print(c) — bu to'g'ridan-to'g'ri ketma-ket bajariluvchi chiziqli algoritmdir."
+  }
+];
+
+// ======================== STATE ========================
+let studentName = '';
+let shuffledQuestions = [];
+let currentQ = 0;
+let answers = [];
+let selectedOption = null;
+let answered = false;
+let timerInterval = null;
+let startTime = null;
+let elapsedSeconds = 0;
+
+// ======================== SHUFFLE ========================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleOptions(q) {
+  const opts = shuffle(q.options.map((o, i) => ({ ...o, origIdx: i })));
+  return { ...q, options: opts };
+}
+
+// ======================== TIMER ========================
+function startTimer() {
+  startTime = Date.now();
+  timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+  elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+  const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+  const s = String(elapsedSeconds % 60).padStart(2, '0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+}
+
+// ======================== START ========================
+function startQuiz() {
+  const first = document.getElementById('inp-first').value.trim();
+  const last  = document.getElementById('inp-last').value.trim();
+  if (!first || !last) {
+    alert("Iltimos, ism va familiyangizni kiriting!");
+    return;
+  }
+  studentName = first + ' ' + last;
+  shuffledQuestions = shuffle(QUESTION_BANK).map(shuffleOptions);
+  currentQ = 0;
+  answers = [];
+  selectedOption = null;
+  answered = false;
+
+  document.getElementById('q-total').textContent = shuffledQuestions.length;
+  document.getElementById('q-name').textContent = studentName;
+
+  showScreen('quiz-screen');
+  startTimer();
+  renderQuestion();
+}
+
+// ======================== RENDER ========================
+function renderQuestion() {
+  const q = shuffledQuestions[currentQ];
+  const total = shuffledQuestions.length;
+
+  document.getElementById('q-current').textContent = currentQ + 1;
+  document.getElementById('q-num-label').textContent = `SAVOL ${String(currentQ + 1).padStart(2, '0')}`;
+  document.getElementById('q-text').innerHTML = q.text;
+  document.getElementById('progress-fill').style.width = `${((currentQ) / total) * 100}%`;
+
+  const container = document.getElementById('options-container');
+  container.innerHTML = '';
+  const LABELS = ['A', 'B', 'C', 'D'];
+
+  q.options.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.innerHTML = `<span class="opt-key">${LABELS[i]}</span><span class="opt-text">${opt.text}</span>`;
+    div.onclick = () => selectOption(i);
+    container.appendChild(div);
+  });
+
+  document.getElementById('feedback-box').className = 'feedback-box';
+  document.getElementById('feedback-box').innerHTML = '';
+  document.getElementById('next-btn').style.display = 'none';
+  selectedOption = null;
+  answered = false;
+}
+
+function selectOption(idx) {
+  if (answered) return;
+  answered = true;
+  selectedOption = idx;
+
+  const q = shuffledQuestions[currentQ];
+  const opts = document.querySelectorAll('.option');
+  const LABELS = ['A', 'B', 'C', 'D'];
+  let correctIdx = q.options.findIndex(o => o.correct);
+  const isCorrect = idx === correctIdx;
+
+  opts.forEach((el, i) => {
+    el.classList.add('disabled');
+    if (i === correctIdx) el.classList.add('correct');
+    if (i === idx && !isCorrect) el.classList.add('wrong');
+  });
+  if (isCorrect) opts[idx].classList.add('selected');
+
+  // Feedback
+  const fb = document.getElementById('feedback-box');
+  if (isCorrect) {
+    fb.className = 'feedback-box correct-fb show';
+    fb.innerHTML = `✅ To'g'ri javob!<div class="explanation">${q.explanation}</div>`;
+  } else {
+    fb.className = 'feedback-box wrong-fb show';
+    fb.innerHTML = `❌ Noto'g'ri! To'g'ri javob: <b>${LABELS[correctIdx]}. ${q.options[correctIdx].text}</b><div class="explanation">${q.explanation}</div>`;
+  }
+
+  answers.push({
+    question: q.text,
+    selected: q.options[idx].text,
+    correct: q.options[correctIdx].text,
+    isCorrect,
+    explanation: q.explanation,
+    selectedLabel: LABELS[idx],
+    correctLabel: LABELS[correctIdx]
+  });
+
+  document.getElementById('next-btn').style.display = 'inline-flex';
+  const isLast = currentQ === shuffledQuestions.length - 1;
+  document.getElementById('next-btn').textContent = isLast ? 'Natijani ko\'rish →' : 'Keyingi →';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= shuffledQuestions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ======================== RESULTS ========================
+function showResults() {
+  stopTimer();
+  const correct = answers.filter(a => a.isCorrect).length;
+  const wrong = answers.length - correct;
+  const pct = Math.round((correct / answers.length) * 100);
+
+  let label = pct >= 85 ? "A'lo natija! 🎉" :
+              pct >= 70 ? "Yaxshi natija! 👍" :
+              pct >= 50 ? "Qoniqarli 📚" : "Ko'proq o'qing 💪";
+
+  document.getElementById('res-name').textContent = studentName;
+  document.getElementById('res-score').textContent = correct;
+  document.getElementById('res-total').textContent = `/${answers.length}`;
+  document.getElementById('res-label').textContent = label;
+  document.getElementById('res-pct').textContent = `${pct}% to'g'ri`;
+  document.getElementById('st-correct').textContent = correct;
+  document.getElementById('st-wrong').textContent = wrong;
+
+  const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+  const s = String(elapsedSeconds % 60).padStart(2, '0');
+  document.getElementById('st-time').textContent = `${m}:${s}`;
+
+  // Report
+  const report = document.getElementById('report-container');
+  report.innerHTML = '';
+  answers.forEach((ans, i) => {
+    const div = document.createElement('div');
+    div.className = `report-item ${ans.isCorrect ? 'r-correct' : 'r-wrong'}`;
+
+    let wrongRow = ans.isCorrect ? '' : `
+      <div class="r-answer">
+        <span class="r-answer-label">✅ To'g'ri:</span>
+        <span class="r-answer-val c">${ans.correctLabel}. ${ans.correct}</span>
+      </div>`;
+
+    div.innerHTML = `
+      <div class="r-q-header">
+        <div class="r-icon">${ans.isCorrect ? '✅' : '❌'}</div>
+        <div class="r-q-text">${i+1}. ${ans.question}</div>
+      </div>
+      <div class="r-answers">
+        <div class="r-answer">
+          <span class="r-answer-label">Siz tanladiz:</span>
+          <span class="r-answer-val ${ans.isCorrect ? 'c' : 'w'}">${ans.selectedLabel}. ${ans.selected}</span>
+        </div>
+        ${wrongRow}
+      </div>
+      <div class="r-explanation">${ans.explanation}</div>`;
+    report.appendChild(div);
+  });
+const timeStr = `${m}:${s}`;
+sendToTelegram(studentName, correct, answers.length, timeStr);
+  showScreen('result-screen');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function retryQuiz() {
+  showScreen('intro-screen');
+  document.getElementById('inp-first').value = '';
+  document.getElementById('inp-last').value = '';
+}
+
+// ======================== SCREEN ========================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const introActive = document.getElementById('intro-screen').classList.contains('active');
+    if (introActive) startQuiz();
+  }
+});
+function sendToTelegram(name, score, total, time) {
+
+  fetch("https://api.telegram.org/bot8750247683:AAGCAkeHuTRIBvCQpX2z7GRyoKfE-VrUrC4/sendMessage", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: "7796824556",
+      text:
+        "📊 Yangi test natijasi\n\n" +
+        "👤 Talaba: " + name + "\n" +
+        "✅ To'g'ri: " + score + "\n" +
+        "📋 Jami: " + total + "\n" +
+        "⏱ Vaqt: " + time
+    })
+  });
+
+}
+</script>
+</body>
+</html>
+
+
